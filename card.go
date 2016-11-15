@@ -112,7 +112,7 @@ func (c *Card) Members() (members []Member, err error) {
 }
 
 func (c *Card) SetDesc(desc string) error {
-	_, err := c.client.Put("/cards/" + c.Id + "/desc?value=" + url.QueryEscape(desc))
+	_, err := c.client.Put("/cards/" + c.Id + "/desc?value=" + url.QueryEscape(desc), nil)
 	if err != nil{
 		c.Desc = desc
 	}
