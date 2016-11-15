@@ -2,3 +2,9 @@ tests/env
 
 *.swo
 *.swp
+
+*.iml
+*.idea
+vendor
+glide.lock
+trello.ini

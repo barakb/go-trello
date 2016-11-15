@@ -111,6 +111,14 @@ func (c *Card) Members() (members []Member, err error) {
 	return
 }
 
+func (c *Card) SetDesc(desc string) error {
+	_, err := c.client.Put("/cards/" + c.Id + "/desc?value=" + url.QueryEscape(desc))
+	if err != nil{
+		c.Desc = desc
+	}
+        return err
+}
+
 func (c *Card) Attachments() (attachments []Attachment, err error) {
 	body, err := c.client.Get("/cards/" + c.Id + "/attachments")
 	if err != nil {
