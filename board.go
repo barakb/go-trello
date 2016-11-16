@@ -16,7 +16,10 @@ limitations under the License.
 
 package trello
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type Board struct {
 	client   *Client
@@ -91,18 +94,54 @@ func (c *Client) Board(boardId string) (board *Board, err error) {
 	return
 }
 
-func (b *Board) Lists() (lists []List, err error) {
+func (b *Board) Lists(names ... string) (res []List, err error) {
 	body, err := b.client.Get("/boards/" + b.Id + "/lists")
 	if err != nil {
 		return
 	}
-
+	lists := []List{}
 	err = json.Unmarshal(body, &lists)
 	for i := range lists {
 		lists[i].client = b.client
 	}
+	if len(names) == 0 {
+		res = lists
+	}else{
+		for _, l := range lists {
+			if contains(names, l.Name) {
+				res = append(res, l)
+			}
+		}
+	}
 	return
 }
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+
+func (b *Board) List(name string) (List, error) {
+	body, err := b.client.Get("/boards/" + b.Id + "/lists")
+	if err != nil {
+		return List{}, err
+	}
+	lists := []List{}
+	err = json.Unmarshal(body, &lists)
+	for i := range lists {
+		if lists[i].Name == name {
+			lists[i].client = b.client
+			return lists[i], nil
+		}
+	}
+	return List{}, fmt.Errorf("List %q not found\n", name)
+}
+
 
 func (b *Board) Members() (members []Member, err error) {
 	body, err := b.client.Get("/boards/" + b.Id + "/members")

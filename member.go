@@ -19,6 +19,7 @@ package trello
 import (
 	"encoding/json"
 	"strings"
+	"fmt"
 )
 
 type Member struct {
@@ -89,6 +90,20 @@ func (m *Member) Boards(field ...string) (boards []Board, err error) {
 	}
 	return
 }
+
+func (m *Member) Board(name string) (Board, error){
+	boards, err := m.Boards()
+	if err != nil {
+		return Board{}, err
+	}
+	for _, board := range boards {
+		if board.Name == name {
+			return board, nil
+		}
+	}
+	return Board{}, fmt.Errorf("failed to find board %q\n", name)
+}
+
 
 func (m *Member) Notifications() (notifications []Notification, err error) {
 	body, err := m.client.Get("/members/" + m.Id + "/notifications")
