@@ -20,16 +20,17 @@ import (
 	"encoding/json"
 	"strings"
 	"fmt"
+	"net/url"
 )
 
 type Member struct {
-	client     *Client
-	Id         string `json:"id"`
-	AvatarHash string `json:"avatarHash"`
-	Bio        string `json:"bio"`
-	BioData    struct {
-		Emoji interface{} `json:"emoji,omitempty"`
-	} `json:"bioData"`
+	client                   *Client
+	Id                       string `json:"id"`
+	AvatarHash               string `json:"avatarHash"`
+	Bio                      string `json:"bio"`
+	BioData                  struct {
+					 Emoji interface{} `json:"emoji,omitempty"`
+				 } `json:"bioData"`
 	Confirmed                bool     `json:"confirmed"`
 	FullName                 string   `json:"fullName"`
 	IdPremOrgsAdmin          []string `json:"idPremOrgsAdmin"`
@@ -49,15 +50,15 @@ type Member struct {
 	NewEmail                 string   `json:"newEmail"`
 	OneTimeMessagesDismissed []string `json:"oneTimeMessagesDismissed"`
 	Prefs                    struct {
-		SendSummaries                 bool   `json:"sendSummaries"`
-		MinutesBetweenSummaries       int    `json:"minutesBetweenSummaries"`
-		MinutesBeforeDeadlineToNotify int    `json:"minutesBeforeDeadlineToNotify"`
-		ColorBlind                    bool   `json:"colorBlind"`
-		Locale                        string `json:"locale"`
-	} `json:"prefs"`
-	Trophies           []string `json:"trophies"`
-	UploadedAvatarHash string   `json:"uploadedAvatarHash"`
-	PremiumFeatures    []string `json:"premiumFeatures"`
+					 SendSummaries                 bool   `json:"sendSummaries"`
+					 MinutesBetweenSummaries       int    `json:"minutesBetweenSummaries"`
+					 MinutesBeforeDeadlineToNotify int    `json:"minutesBeforeDeadlineToNotify"`
+					 ColorBlind                    bool   `json:"colorBlind"`
+					 Locale                        string `json:"locale"`
+				 } `json:"prefs"`
+	Trophies                 []string `json:"trophies"`
+	UploadedAvatarHash       string   `json:"uploadedAvatarHash"`
+	PremiumFeatures          []string `json:"premiumFeatures"`
 }
 
 func (c *Client) Member(nick string) (member *Member, err error) {
@@ -91,7 +92,7 @@ func (m *Member) Boards(field ...string) (boards []Board, err error) {
 	return
 }
 
-func (m *Member) Board(name string) (Board, error){
+func (m *Member) Board(name string) (Board, error) {
 	boards, err := m.Boards()
 	if err != nil {
 		return Board{}, err
@@ -103,7 +104,6 @@ func (m *Member) Board(name string) (Board, error){
 	}
 	return Board{}, fmt.Errorf("failed to find board %q\n", name)
 }
-
 
 func (m *Member) Notifications() (notifications []Notification, err error) {
 	body, err := m.client.Get("/members/" + m.Id + "/notifications")
@@ -121,4 +121,22 @@ func (m *Member) Notifications() (notifications []Notification, err error) {
 // TODO: Avatar sizes [170, 30]
 func (m *Member) AvatarUrl() string {
 	return "https://trello-avatars.s3.amazonaws.com/" + m.AvatarHash + "/170.png"
+}
+
+type Search struct {
+	Cards []Card `json:"cards"`
+}
+
+func (m *Member) SearchCards(query string) ([]Card, error) {
+	body, err := m.client.Get("/search?query=" + url.QueryEscape(query))
+	if err != nil {
+		return []Card{}, err
+	}
+	search := Search{}
+	err = json.Unmarshal(body, &search)
+	for _, card := range search.Cards {
+		card.client = m.client
+	}
+	return search.Cards, nil
+
 }
