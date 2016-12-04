@@ -19,6 +19,7 @@ package trello
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 )
 
 type Board struct {
@@ -222,4 +223,12 @@ func (b *Board) Actions(arg ...*Argument) (actions []Action, err error) {
 		actions[i].client = b.client
 	}
 	return
+}
+
+func (b *Board) AddList(name string, pos int) (err error) {
+	values := make(url.Values)
+	values.Set("name", name)
+	values.Set("pos", fmt.Sprintf("%d", pos))
+	_, err = b.client.Post("/boards/" + b.Id + "/lists", values)
+	return err
 }
