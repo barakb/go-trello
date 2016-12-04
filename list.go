@@ -94,3 +94,13 @@ func (l *List) AddCard(opts Card) (*Card, error) {
 	card.client = l.client
 	return &card, nil
 }
+
+func (l *List) Close() (error) {
+	values := make( url.Values)
+	values.Set("value", "true")
+	_, err :=  l.client.Put("/lists/" + l.Id + "/closed", values)
+	if err != nil {
+		return nil
+	}
+	return err
+}
